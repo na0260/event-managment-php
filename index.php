@@ -1,9 +1,16 @@
 <?php
-include "config/database.php"; // Database connection
-include "includes/navbar.php"; // Navbar
+session_start();
+include "config/database.php";
 
-// Fetch all events from the database
-$stmt = $conn->query("SELECT * FROM events ORDER BY date ASC");
+// Fetch events with the attendee count
+$stmt = $conn->query("
+    SELECT e.id, e.title, e.description, e.event_date, e.location, e.thumbnail_image, 
+           COUNT(er.id) AS attendee_count
+    FROM events e
+    LEFT JOIN event_registrations er ON e.id = er.event_id
+    GROUP BY e.id
+    ORDER BY e.event_date ASC
+");
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -12,38 +19,37 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Management System</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="./assets/bootstrap.min.css" rel="stylesheet">
+    <title>Event Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<?php include "./includes/navbar.php"; ?>
 
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Upcoming Events</h2>
-
-    <div class="row">
-        <?php if (count($events) > 0): ?>
-            <?php foreach ($events as $event): ?>
-                <div class="col-md-4">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars($event['name']) ?></h5>
-                            <p class="card-text"><?= htmlspecialchars($event['description']) ?></p>
-                            <p><strong>Date:</strong> <?= date("F d, Y - h:i A", strtotime($event['date'])) ?></p>
-                            <p><strong>Location:</strong> <?= htmlspecialchars($event['location']) ?></p>
-                            <a href="events/register.php?event_id=<?= $event['id'] ?>" class="btn btn-primary">Register</a>
-                        </div>
+    <h2 class="text-center">Upcoming Events</h2>
+    <div class="row mt-4">
+        <?php foreach ($events as $event): ?>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <img src="uploads/<?= $event['thumbnail_image']; ?>" class="card-img-top" alt="<?= htmlspecialchars($event['title']); ?>">
+                    <div class="card-body">
+                        <h5 class="card-title"><?= htmlspecialchars($event['title']); ?></h5>
+                        <p class="card-text"><?= substr(htmlspecialchars($event['description']), 0, 100); ?>...</p>
+                        <p class="text-muted"><strong>Date:</strong> <?= date("F j, Y, g:i A", strtotime($event['event_date'])); ?></p>
+                        <p class="text-muted"><strong>Location:</strong> <?= htmlspecialchars($event['location']); ?></p>
+                        <p class="text-muted"><strong>Attendees:</strong> <?= $event['attendee_count']; ?></p>
+                        <a href="./events/view.php?id=<?= $event['id']; ?>" class="btn btn-primary w-100">View Details</a>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-center">No upcoming events.</p>
-        <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
     </div>
+
+    <?php if (empty($events)): ?>
+        <p class="text-center text-muted">No upcoming events.</p>
+    <?php endif; ?>
 </div>
 
-<!-- Bootstrap 5 JS -->
-<script src="./assets/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
