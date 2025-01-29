@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 $host = "localhost";
 $dbname = "event_management_php";
 $username = "root";
