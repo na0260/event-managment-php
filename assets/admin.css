@@ -1,0 +1,13 @@
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+.container-fluid {
+    margin-left: 260px;
+}
+.shadow {
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
