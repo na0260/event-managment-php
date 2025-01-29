@@ -1,45 +1,42 @@
 <?php
-include "../config/database.php"; // Include Database Connection
-
-$errors = [];
+include "../config/database.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST["name"]);
     $email = trim($_POST["email"]);
-    $password = $_POST["password"];
-    $confirm_password = $_POST["confirm_password"];
+    $password = trim($_POST["password"]);
+    $confirm_password = trim($_POST["confirm_password"]);
 
-    // Validate Inputs
+    // Validate input fields
     if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
-        $errors[] = "All fields are required.";
+        $error = "All fields are required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Invalid email format.";
+        $error = "Invalid email format.";
     } elseif ($password !== $confirm_password) {
-        $errors[] = "Passwords do not match.";
-    } elseif (strlen($password) < 6) {
-        $errors[] = "Password must be at least 6 characters.";
+        $error = "Passwords do not match.";
     } else {
-        // Check if email exists
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
-        if ($stmt->fetch()) {
-            $errors[] = "Email already registered.";
-        }
-    }
-
-    // If no errors, insert into database
-    if (empty($errors)) {
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-        if ($stmt->execute([$name, $email, $hashedPassword])) {
-            $user_id = $conn->lastInsertId();
-            $_SESSION["user_id"] = $user_id;
-            $_SESSION["user_name"] = $name;
-            $_SESSION["user_email"] = $email;
-            header("Location: ../index.php");
-            exit();
+        if ($stmt->rowCount() > 0) {
+            $error = "Email is already registered.";
         } else {
-            $errors[] = "Registration failed. Try again.";
+            // Hash the password
+            $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+
+            // Insert user into database
+            $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+            if ($stmt->execute([$name, $email, $hashed_password])) {
+                // Auto-login the user
+                $_SESSION["user_id"] = $conn->lastInsertId();
+                $_SESSION["user_name"] = $name;
+                $_SESSION["user_role"] = "user"; // Default role
+
+                header("Location: ../index.php"); // Redirect to homepage
+                exit();
+            } else {
+                $error = "Registration failed. Try again.";
+            }
         }
     }
 }
@@ -50,41 +47,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Registration</title>
+    <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-
+<?php include "../includes/navbar.php"; ?>
 <div class="container mt-5">
-    <h2 class="mb-4">Register</h2>
-
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger">
-            <?php foreach ($errors as $error) echo "<p>$error</p>"; ?>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h3 class="text-center">Register</h3>
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger"><?= $error; ?></div>
+            <?php endif; ?>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" name="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" name="confirm_password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+            <p class="mt-3 text-center">Already have an account? <a href="login.php">Login</a></p>
         </div>
-    <?php endif; ?>
-
-    <form method="POST" action="">
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input type="text" name="name" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email Address</label>
-            <input type="email" name="email" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Confirm Password</label>
-            <input type="password" name="confirm_password" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-        <p class="mt-3">Already have an account? <a href="login.php">Login</a></p>
-    </form>
+    </div>
 </div>
-
 </body>
 </html>
