@@ -2,7 +2,6 @@
 session_start();
 include "config/database.php";
 
-// Fetch events with the attendee count
 $stmt = $conn->query("
     SELECT e.id, e.title, e.description, e.event_date, e.location, e.thumbnail_image, 
            COUNT(er.id) AS attendee_count
@@ -20,7 +19,7 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./assets/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <?php include "./includes/navbar.php"; ?>
@@ -50,6 +49,6 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php endif; ?>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./assets/bootstrap.bundle.min.js"></script>
 </body>
 </html>

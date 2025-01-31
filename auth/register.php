@@ -1,6 +1,15 @@
 <?php
 include "../config/database.php";
 
+if (isset($_SESSION["user_id"])) {
+    if ($_SESSION["user_role"] == "admin") {
+        header("Location: ../admin/dashboard.php");
+    } else {
+        header("Location: ../index.php");
+    }
+    exit();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST["name"]);
     $email = trim($_POST["email"]);
