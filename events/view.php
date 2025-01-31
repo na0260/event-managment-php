@@ -2,20 +2,17 @@
 session_start();
 include "../config/database.php";
 
-// Check if the event ID is passed via URL
 if (isset($_GET['id'])) {
     $event_id = $_GET['id'];
     if (isset($_SESSION['user_id'])) {
         $user_id = $_SESSION['user_id'];
-        $event_id = $event_id;  // Assuming you're fetching event details before this code
+        $event_id = $event_id;
 
-        // Check if the user has already registered for the event
         $stmt = $conn->prepare("SELECT COUNT(*) FROM event_registrations WHERE user_id = ? AND event_id = ?");
         $stmt->execute([$user_id, $event_id]);
-        $already_registered = $stmt->fetchColumn() > 0;  // True if user is already registered
+        $already_registered = $stmt->fetchColumn() > 0;
     }
 
-    // Fetch event details from the database
     $stmt = $conn->prepare("
         SELECT e.id, e.title, e.description, e.event_date, e.location, e.cover_image, e.thumbnail_image,
                COUNT(er.id) AS attendee_count
@@ -28,13 +25,11 @@ if (isset($_GET['id'])) {
     $stmt->execute();
     $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // If the event is not found, redirect to the events list page
     if (!$event) {
         header("Location: index.php");
         exit();
     }
 } else {
-    // If no event ID is provided, redirect to the events list page
     header("Location: index.php");
     exit();
 }
@@ -46,7 +41,7 @@ if (isset($_GET['id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($event['title']); ?> - Event Details</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <?php include "../includes/navbar.php"; ?>
@@ -61,7 +56,6 @@ if (isset($_GET['id'])) {
                 <p><strong>Date:</strong> <?= date("F j, Y, g:i A", strtotime($event['event_date'])); ?></p>
                 <p><strong>Location:</strong> <?= htmlspecialchars($event['location']); ?></p>
                 <p><strong>Attendees:</strong> <?= $event['attendee_count']; ?></p>
-                    <!-- Check if user is logged in and not an admin -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php if ($_SESSION['user_role'] === 'admin'): ?>
                             <p class="text-danger">Admins cannot register for events. Please login as a user to register.</p>
@@ -85,6 +79,6 @@ if (isset($_GET['id'])) {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/bootstrap.bundle.min.js"></script>
 </body>
 </html>

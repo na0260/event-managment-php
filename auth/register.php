@@ -7,7 +7,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = trim($_POST["password"]);
     $confirm_password = trim($_POST["confirm_password"]);
 
-    // Validate input fields
     if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
         $error = "All fields are required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -15,24 +14,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($password !== $confirm_password) {
         $error = "Passwords do not match.";
     } else {
-        // Check if email already exists
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->rowCount() > 0) {
             $error = "Email is already registered.";
         } else {
-            // Hash the password
             $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-            // Insert user into database
             $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
             if ($stmt->execute([$name, $email, $hashed_password])) {
-                // Auto-login the user
                 $_SESSION["user_id"] = $conn->lastInsertId();
                 $_SESSION["user_name"] = $name;
-                $_SESSION["user_role"] = "user"; // Default role
+                $_SESSION["user_role"] = "user";
 
-                header("Location: ../index.php"); // Redirect to homepage
+                header("Location: ../index.php");
                 exit();
             } else {
                 $error = "Registration failed. Try again.";
@@ -48,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <?php include "../includes/navbar.php"; ?>

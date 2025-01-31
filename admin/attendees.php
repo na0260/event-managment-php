@@ -2,13 +2,11 @@
 session_start();
 include "../config/database.php";
 
-// Check if the admin is logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
     header("Location: ../auth/login.php");
     exit();
 }
 
-// Fetch attendees with event details
 $query = "SELECT er.id, u.name AS attendee_name, u.email, 
                  e.title AS event_name, e.event_date, e.location 
           FROM event_registrations er
@@ -27,7 +25,7 @@ $attendees = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Attendees - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <?php include "../includes/admin_navbar.php"; ?>

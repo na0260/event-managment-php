@@ -2,7 +2,6 @@
 session_start();
 include "../config/database.php";
 
-// Check if admin is logged in
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
     header("Location: ../auth/login.php");
     exit();
@@ -10,14 +9,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 $message = "";
 
-// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $title = trim($_POST['title']);
     $description = trim($_POST['description']);
     $event_date = $_POST['event_date'];
     $location = trim($_POST['location']);
     $max_capacity = (int)$_POST['max_capacity'];
-    $created_by = $_SESSION['user_id']; // Store admin ID
+    $created_by = $_SESSION['user_id'];
 
     if (empty($title) || empty($description) || empty($event_date) || empty($location) || $max_capacity <= 0) {
         $message = "<div class='alert alert-danger'>All fields are required.</div>";
@@ -37,7 +35,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             move_uploaded_file($thumbnail_image['tmp_name'], $thumbnail_path);
         }
 
-        // Insert event into database
         $query = "INSERT INTO events (title, description, event_date, location, max_capacity, cover_image, thumbnail_image, created_by)
                   VALUES (:title, :description, :event_date, :location, :max_capacity, :cover_image, :thumbnail_image, :created_by)";
         $stmt = $conn->prepare($query);
@@ -63,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Event - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <?php include "../includes/admin_navbar.php"; ?>
