@@ -30,10 +30,11 @@ $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php foreach ($events as $event): ?>
             <div class="col-md-4 mb-4">
                 <div class="card shadow-sm">
-                    <img src="uploads/<?= $event['thumbnail_image']; ?>" class="card-img-top" alt="<?= htmlspecialchars($event['title']); ?>">
+                    <div class="ratio ratio-16x9">
+                        <img src="uploads/<?= $event['thumbnail_image']; ?>" class="card-img-top" alt="<?= htmlspecialchars($event['title']); ?>" style="object-fit: cover;">
+                    </div>
                     <div class="card-body">
                         <h5 class="card-title"><?= htmlspecialchars($event['title']); ?></h5>
-                        <p class="card-text"><?= substr(htmlspecialchars($event['description']), 0, 100); ?>...</p>
                         <p class="text-muted"><strong>Date:</strong> <?= date("F j, Y, g:i A", strtotime($event['event_date'])); ?></p>
                         <p class="text-muted"><strong>Location:</strong> <?= htmlspecialchars($event['location']); ?></p>
                         <p class="text-muted"><strong>Attendees:</strong> <?= $event['attendee_count']; ?></p>

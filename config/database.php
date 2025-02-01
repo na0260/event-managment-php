@@ -5,8 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $host = "localhost";
 $dbname = "event_management_php";
-$username = "root";
-$password = "";
+$username = "evm";
+$password = "Event@2025";
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
